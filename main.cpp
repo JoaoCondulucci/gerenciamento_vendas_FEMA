@@ -87,6 +87,8 @@ int buscaBinaria(T lista[], const int contador, unsigned int codigoBusca) {
   return -1;
 }
 
+void incluirItens(unsigned int codigoVenda, ItemVenda itens[], int &qtdItens, int maxItens, Produto produtos[], int qtdProdutos);
+
 /* Início das Funções para o Exercício 1 */
 int lerCategoria(Categoria c[], const int n) {
   cout << "\n\n=-=-=- Iniciando leitura da Categoria -=-=-=\n\n";
@@ -209,7 +211,8 @@ void inserirVendedor(struct Vendedor lista[], int &contador, int tamanho){
 void registrarVenda(Venda v[], int &qtdVendas, int maxVendas,
                     Cliente c[], int qtdClientes,
                     Vendedor vendedor[], int qtdVendedores,
-                    ItemVenda itens[], int &qtdItens, int maxItens) {
+                    ItemVenda itens[], int &qtdItens, int maxItens,
+                    Produto prod[], int qtdProd) {
   cout << "\n\n-=-=- Registro de Nova Venda -=-=-\n\n";
 
   if (qtdVendas >= maxVendas) {
@@ -226,38 +229,41 @@ void registrarVenda(Venda v[], int &qtdVendas, int maxVendas,
     return;
   }
 
-  // ================= DEBUG =================
-  cout << "\n--- DEBUG: Lista de Clientes Vistos pela Funcao ---\n";
-  cout << "Quantidade de clientes (qtdClientes): " << qtdClientes << "\n";
-  for(int i = 0; i < qtdClientes; i++) {
-    cout << "Posicao " << i << " -> Codigo: " << c[i].codigo << " | Nome: " << c[i].nome << "\n";
-  }
-  cout << "---------------------------------------------------\n";
-  // =========================================
-
   //4.1 -> Busca do Cliente
+  // 4.1 - Busca do Cliente com Loop de Repetição
   unsigned int codCliente;
-  cout << "\nInsira o Código do Cliente: ";
-  cin >> codCliente;
+  int indiceCliente; // Declaramos fora do loop para o while conseguir enxergar
 
-  int indiceCliente = buscaBinaria<Cliente>(c, qtdClientes, codCliente);
-  if (indiceCliente == -1) {
-    cout << "\n[ERRO]: Cliente de código '" << codCliente << "' não foi encontrado!\n";
-    return;
-  }
-  cout<< "\nCliente selecionado: " << c[indiceCliente].nome << "\n";
+  do {
+    cout << "\nInsira o Codigo do Cliente: ";
+    cin >> codCliente;
+
+    indiceCliente = buscaBinaria<Cliente>(c, qtdClientes, codCliente);
+
+    if (indiceCliente == -1) {
+      cout << "[ERRO]: Cliente de codigo '" << codCliente << "' nao foi encontrado! Tente novamente.\n";
+    }
+
+  } while (indiceCliente == -1); // Repete enquanto o cliente não for achado
+
+  // Se saiu do loop, é porque achou!
+  cout << "-> Cliente selecionado: " << c[indiceCliente].nome << "\n";
 
   //4.2 -> Busca do Vendedor
   unsigned int codVendedor;
-  cout << "\nInsica o Código do Vendedor: ";
-  cin >> codVendedor;
+  int indiceVendedor;
+  do {
+    cout << "\nInsira o Código do Vendedor: ";
+    cin >> codVendedor;
 
-  int indiceVendedor = buscaBinaria<Vendedor>(vendedor, qtdVendedores, codVendedor);
-  if (indiceVendedor == -1) {
-    cout << "\n[ERRO]: Vendedor de código '" << codVendedor << "' não foi encontrado!\n";
-    return;
-  }
-  cout << "\nVendedor selecionado: " << vendedor[indiceVendedor].nome << "\n";
+    indiceVendedor = buscaBinaria<Vendedor>(vendedor, qtdVendedores, codVendedor);
+
+    if (indiceVendedor == -1) {
+      cout << "\n[ERRO]: Vendedor de código '" << codVendedor << "' não foi encontrado!\n";
+    }
+  } while (indiceVendedor == -1);
+
+  cout << "->Vendedor selecionado: " << vendedor[indiceVendedor].nome << "\n";
 
   v[qtdVendas].codigo = codigoVenda;
   v[qtdVendas].codigoCliente = codCliente;
@@ -273,20 +279,7 @@ void registrarVenda(Venda v[], int &qtdVendas, int maxVendas,
   cout << "\n-=-=- Adição de Itens na Venda " << codigoVenda << " -=-=-";
 
   do {
-    if (qtdItens >= maxItens) {
-      cout << "\nLimite de itens atingido no sistema!\n";
-      break;
-    }
-
-    itens[qtdItens].codigo_venda = codigoVenda;
-
-    cout << "\nCódigo do Produto: ";
-    cin >> itens[qtdItens].codigo_produto;
-
-    cout << "\nQuantidade Vendida: ";
-    cin >> itens[qtdItens].quantidade;
-
-    qtdItens++;
+    incluirItens(codigoVenda, itens, qtdItens, maxItens, prod, qtdProd);
 
     cout << "\nDeseja adicionar outro produto a esta venda? (1 - Sim / 0 - Não): ";
     cin >> opcao;
@@ -295,12 +288,70 @@ void registrarVenda(Venda v[], int &qtdVendas, int maxVendas,
   cout << "\nVenda concluída com sucesso!\n";
 }
 
+//5˚ Passo -> Permitir a inclusão de itens em uma venda
+void incluirItens(unsigned int codigoVenda,
+                  ItemVenda itens[], int &qtdItens, int maxItens,
+                  Produto produtos[], int qtdProdutos) {
+  if (qtdItens >= maxItens) {
+    cout << "\nLimite de Itens na Venda atingido no sistema!";
+    return;
+  }
+
+  //5.1 -> Busca do Produto
+  unsigned int codProduto;
+  int indiceProduto;
+
+  do {
+    cout << "\nInsira o Código do Produto que deseja inserir um novo item: ";
+    cin >> codProduto;
+
+    indiceProduto = buscaBinaria<Produto>(produtos, qtdProdutos, codProduto);
+    if (indiceProduto == -1) {
+      cout << "\n[ERRO]: Produto de código '" << codProduto << "' não foi encontrado!\n";
+    }
+  } while (indiceProduto == -1);
+
+  cout << "\n-> Produto: " << produtos[indiceProduto].descricao;
+  cout << "\n\t|-> Preço unitário: R$ " << produtos[indiceProduto].precoUnit;
+  cout << "\n\t|-> Estoque disponível: " << produtos[indiceProduto].quantEstoque << "\n";
+
+  //5.2 -> Validação de Quantidade e do Estoque
+  int qtdDesejada;
+  bool qtdValida = false;
+
+  do {
+    cout << "\nInforme a quantidade desejada: ";
+    cin >> qtdDesejada;
+    if (qtdDesejada <= 0) cout << "\n[ERRO]: A quantidade dev ser maior que zero!\n";
+    else if(qtdDesejada > produtos[indiceProduto].quantEstoque){
+      cout << "\n[ERRO]: A Quantidade desejada excede a quantidade disponível no estoque!";
+      cout << "\nApenas " << produtos[indiceProduto].quantEstoque << " unidade(s) disponíveis.\n";
+    } else {
+      qtdValida = true;
+    }
+  } while (!qtdValida);
+
+  itens[qtdItens].codigo_venda = codigoVenda;
+  itens[qtdItens].codigo_produto = codProduto;
+  itens[qtdItens].quantidade = qtdDesejada;
+
+  qtdItens++;
+
+  //5.3 -> Subtração na quantidade do estoque
+  produtos[indiceProduto].quantEstoque -= qtdDesejada;
+  cout << "\nItem adicionado com sucesso!";
+  cout << "\nEstoque atualizado para '" << produtos[indiceProduto].quantEstoque << "' unidade(s).";
+}
+
 int main() {
-    // 1. Variáveis de controle e Arrays (Tamanhos reduzidos para testes)
-    const int MAX_CLIENTES = 5;
-    const int MAX_VENDEDORES = 5;
-    const int MAX_VENDAS = 10;
-    const int MAX_ITENS = 20;
+    // =========================================================================
+    // 1. CONFIGURAÇÃO DE LIMITES E ARRAYS
+    // =========================================================================
+    const int MAX_CLIENTES = 10;
+    const int MAX_VENDEDORES = 10;
+    const int MAX_PRODUTOS = 10;
+    const int MAX_VENDAS = 20;
+    const int MAX_ITENS = 50;
 
     Cliente listaClientes[MAX_CLIENTES];
     int qtdClientes = 0;
@@ -308,64 +359,75 @@ int main() {
     Vendedor listaVendedores[MAX_VENDEDORES];
     int qtdVendedores = 0;
 
+    Produto listaProdutos[MAX_PRODUTOS];
+    int qtdProdutos = 0;
+
     Venda listaVendas[MAX_VENDAS];
     int qtdVendas = 0;
 
     ItemVenda listaItens[MAX_ITENS];
     int qtdItens = 0;
 
-    Produto listaProdutos[10]; // Tamanho reduzido
-    int qtdProdutos = 0;
-
     // =========================================================================
-    // 2. MOCK DE DADOS (Área de testes com personagens)
-    // Inseridos fora de ordem para validar a nossa função ordenarLista!
+    // 2. MOCK DATA (Carga Inicial de Dados para Testes)
     // =========================================================================
 
-    // Clientes (League of Legends)
-    listaClientes[0] = {15, "Jinx", "Zaun", "18 99999-0001"};
-    listaClientes[1] = {3, "Yasuo", "Ionia", "18 88888-0002"};
-    qtdClientes = 2;
-    ordenarLista<Cliente>(listaClientes, qtdClientes); // Ordena: 3 (Yasuo), depois 15 (Jinx)
+    listaClientes[0] = {12, "Aang", "Templo do Ar do Sul", "18 99999-1111"};
+    listaClientes[1] = {8, "Zuko", "Nacao do Fogo", "18 88888-2222"};
+    listaClientes[2] = {99, "Katara", "Tribo da Agua do Sul", "18 77777-3333"};
+    qtdClientes = 3;
+    ordenarLista<Cliente>(listaClientes, qtdClientes);
 
-    // Vendedores (Overwatch)
-    listaVendedores[0] = {10, "Tracer", "18 77777-0003"};
-    listaVendedores[1] = {5, "Genji", "18 66666-0004"};
-    qtdVendedores = 2;
-    ordenarLista<Vendedor>(listaVendedores, qtdVendedores); // Ordena: 5 (Genji), depois 10 (Tracer)
+    listaVendedores[0] = {7, "Lee Sin", "18 44444-4444"};
+    listaVendedores[1] = {4, "Shen", "18 66666-5555"};
+    listaVendedores[2] = {5, "Rakan", "18 22222-2222"};
+    qtdVendedores = 3;
+    ordenarLista<Vendedor>(listaVendedores, qtdVendedores);
+
+    listaProdutos[0] = {50, "Planador de Ar", 1, 5, 1, 10, 1500.00f};
+    listaProdutos[1] = {10, "Gume do Infinito", 2, 2, 1, 5, 3400.00f}; // Apenas 2 no estoque!
+    listaProdutos[2] = {30, "Pocao de Vida", 3, 50, 10, 100, 50.00f};
+    qtdProdutos = 3;
+    ordenarLista<Produto>(listaProdutos, qtdProdutos);
 
     // =========================================================================
-    // 3. MENU PRINCIPAL
+    // 3. LAÇO PRINCIPAL DO SISTEMA
     // =========================================================================
 
     int opcao = 0;
     do {
-        cout << "\n\n=-=-=- SISTEMA DE GERENCIAMENTO DE VENDAS -=-=-=\n";
-        cout << "1 - Inserir Cliente (Passo 2)\n";
-        cout << "2 - Inserir Vendedor (Passo 3)\n";
-        cout << "3 - Registrar Nova Venda (Passo 4)\n";
+        cout << "\n\n===================================================\n";
+        cout << "   SISTEMA DE GERENCIAMENTO - LOJA MULTIVERSO\n";
+        cout << "===================================================\n";
+        cout << "1 - Inserir Cliente\n";
+        cout << "2 - Inserir Vendedor\n";
+        cout << "3 - Registrar Nova Venda (Inclui Itens)\n";
         cout << "0 - Sair\n";
+        cout << "===================================================\n";
         cout << "Escolha uma opcao: ";
         cin >> opcao;
 
         switch(opcao) {
             case 1:
-                cout << "\n[Funcao de Cliente em construcao...]\n";
+                cout << "\n[Funcao de Inserir Cliente]\n";
                 break;
             case 2:
-                inserirVendedor(listaVendedores, qtdVendedores, MAX_VENDEDORES);
+                // Sua funcao de inserir vendedor aqui
+                cout << "\n[Funcao de Inserir Vendedor]\n";
                 break;
             case 3:
+                // Chamada principal que conecta tudo (Passo 4, que chama o 5)
                 registrarVenda(listaVendas, qtdVendas, MAX_VENDAS,
                                listaClientes, qtdClientes,
                                listaVendedores, qtdVendedores,
-                               listaItens, qtdItens, MAX_ITENS);
+                               listaItens, qtdItens, MAX_ITENS,
+                               listaProdutos, qtdProdutos);
                 break;
             case 0:
-                cout << "\nSaindo do sistema... Ate logo!\n";
+                cout << "\nEncerrando o sistema. Ate mais!\n";
                 break;
             default:
-                cout << "\nOpcao invalida!\n";
+                cout << "\nOpcao invalida. Tente novamente!\n";
         }
     } while (opcao != 0);
 
