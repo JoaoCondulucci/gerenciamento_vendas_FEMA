@@ -167,7 +167,7 @@ void inserirCliente(struct Cliente lista[], int &contador, int tamanho){
       cin >> lista[cont].telefone;
       cont++;
     }
-    if (contador >= tamanho) {
+    if (cont >= tamanho) {
       cout << "\nLimite de Clientes atingido!\n";
       break;
     }
@@ -214,6 +214,23 @@ void registrarVenda(Venda v[], int &qtdVendas, int maxVendas,
                     ItemVenda itens[], int &qtdItens, int maxItens,
                     Produto prod[], int qtdProd) {
   cout << "\n\n-=-=- Registro de Nova Venda -=-=-\n\n";
+
+  if (qtdClientes == 0) {
+    cout << "[ERRO]: Nao e possivel realizar vendas sem clientes cadastrados no sistema!\n";
+    return;
+  }
+  if (qtdVendedores == 0) {
+    cout << "[ERRO]: Nao e possivel realizar vendas sem vendedores cadastrados no sistema!\n";
+    return;
+  }
+  if (qtdProd == 0) {
+    cout << "[ERRO]: Nao e possivel realizar vendas sem produtos cadastrados no sistema!\n";
+    return;
+  }
+  if (qtdVendas >= maxVendas) {
+    cout << "\nLimite de Vendas atingido no sistema!\n";
+    return;
+  }
 
   if (qtdVendas >= maxVendas) {
     cout << "\nLimite de Vendas atingido no sistema!\n";
@@ -343,6 +360,128 @@ void incluirItens(unsigned int codigoVenda,
   cout << "\nEstoque atualizado para '" << produtos[indiceProduto].quantEstoque << "' unidade(s).";
 }
 
+//6˚ Passo -> Permitir a consulda de produtos
+void consultarProduto(struct Produto lista[], int contador){
+  int codigo = 0;
+  int loop = 1;
+  for(int i = 0; i < contador; i++){
+    cout << lista[i].codigo << " - " << lista[i].descricao << endl; // Aqui a ideia e printar tudo para a pessoa saber oque ela vai querer ver mais detalhes
+  }
+  cout << "Insira o codigo do produto que deseja consultar: "; // Queria adicionar a opcao do usuario ja colocar varios produtos que ele quer ver de uma vez
+  cin >> codigo;
+ //6.1 -> Exibir todos os dados e consultar o valor total em estoque
+  while(loop != 0){
+
+    for(int i = 0; i < contador; i++){
+      if(lista[i].codigo == codigo){
+        cout << "Codigo: " << lista[i].codigo << endl;
+        cout << "Descricao: " << lista[i].descricao << endl;
+        cout << "Preco: " << lista[i].precoUnit << endl;
+        cout << "Quantidade em estoque: " << lista[i].quantEstoque << endl;
+        cout << "Valor total em estoque: " << lista[i].quantEstoque * lista[i].precoUnit << endl;
+        break;
+    } else if (i == contador - 1){
+      cout << "Codigo nao encontrado";
+    }
+  }
+  cout << "Deseja consultar outro produto?(0 - Nao / 1 - Sim): ";
+  cin >> loop; 
+  if(loop !=0 ){
+    cout << "Insira o codigo do produto que deseja consultar: ";
+    cin >> codigo;
+  }
+  }
+}
+
+//7˚ Passo -> Exibir todos os produtos com o estoque minimo
+void consultarEstoqueMin(struct Produto lista[], int contador){
+  float valorTotal = 0;
+//7.1 ->
+  for(int i = 0; i < contador; i++){
+    if(lista[i].quantEstoque < lista[i].estoqueMin){
+      int quantComprada = lista[i].estoqueMax - lista[i].quantEstoque;
+    //7.1.1 ->
+      float valorComprada = float(quantComprada) * lista[i].precoUnit;
+      cout << "Codigo: " << lista[i].codigo << endl;
+      cout << "Descricao: " << lista[i].descricao << endl;
+      cout << "Quantidade em estoque: " << lista[i].quantEstoque << endl;
+      cout << "Quantidade maxima: " << lista[i].estoqueMax << endl;
+      cout << "Quantidade a ser comprada: " << quantComprada << endl;
+      cout << "Valor da compra" << valorComprada << endl;
+      valorTotal += valorComprada;
+    } 
+  }
+//7.2 ->   
+  cout << "Valor total da reposição do estoque: " << valorTotal;
+}
+
+//8˚ Passo -> Exibir o valor arrecadado de todas as vendas
+void exibirValorArrecadado(Venda v[], int qtdVendas, ItemVenda itens[], int qtdItens, Produto prod[], int qtdProd){
+  float valorTotal = 0;
+  for(int i = 0; i < qtdVendas; i++){
+    float valorAtual = 0;
+    for(int j = 0; j < qtdItens; j++){
+      if(itens[j].codigo_venda == v[i].codigo){
+        int indiceProduto = buscaBinaria<Produto>(prod, qtdProd, itens[j].codigo_produto);
+        if(indiceProduto == -1){ // VE SE ISSO DA CERTO MUAHAHAHAHAH
+          continue;
+        }
+        valorAtual += prod[indiceProduto].precoUnit * itens[j].quantidade;
+      }
+    }
+    valorTotal += valorAtual;
+  }
+  cout << "Valor total arrecadado: " << valorTotal;
+}
+
+//9˚ Passo -> Exibir o valor arrecadado de todas as vendas
+void excluirCliente(Cliente c[], int &qntVendas){
+  unsigned int codigo;
+  if(qntVendas <= 0){
+    cout << "Nenhum cliente encontrado\n";
+    return;
+  }
+
+  cout << "Insira o codigo do cliente que deseja excluir: ";
+  cin >> codigo;
+
+  int indice = buscaBinaria<Cliente>(c, qntVendas, codigo);
+  if(indice == -1){
+    cout << "Cliente nao encontrado\n";
+    return;
+  }
+
+  cout << "Cliente encontrado: " << c[indice].nome << endl;
+  int confirm;
+  bool loop = true;
+
+  while(loop){
+
+  cout << "Deseja mesmo excluir? 1 - Sim / 0 - Nao: ";
+  cin >> confirm;
+
+  if(confirm == 1){
+
+    for (int i = indice; i < qntVendas - 1; i++){
+      c[i] = c[i + 1];
+    }
+
+    qntVendas--;
+
+    cout << "Cliente excluido\n";
+    loop = false;
+
+  } else if (confirm == 0){
+    cout << "Cliente não foi excluido\n";
+    loop = false;
+
+  } else {
+    cout << "Opcao invalida\n";
+    }
+  }
+}
+
+
 int main() {
     // =========================================================================
     // 1. CONFIGURAÇÃO DE LIMITES E ARRAYS
@@ -352,6 +491,7 @@ int main() {
     const int MAX_PRODUTOS = 10;
     const int MAX_VENDAS = 20;
     const int MAX_ITENS = 50;
+    const int MAX_CATEGORIAS = 20;
 
     Cliente listaClientes[MAX_CLIENTES];
     int qtdClientes = 0;
@@ -367,6 +507,10 @@ int main() {
 
     ItemVenda listaItens[MAX_ITENS];
     int qtdItens = 0;
+
+    Categoria listaCategorias[MAX_CATEGORIAS];
+    int qtdCategorias = 0;
+
 
     // =========================================================================
     // 2. MOCK DATA (Carga Inicial de Dados para Testes)
@@ -390,6 +534,12 @@ int main() {
     qtdProdutos = 3;
     ordenarLista<Produto>(listaProdutos, qtdProdutos);
 
+    listaCategorias[0] = {1, "Acessorios de Planador"};
+    listaCategorias[1] = {2, "Armas Medievais"};
+    listaCategorias[2] = {3, "Consumiveis"};
+    qtdCategorias = 3;
+    ordenarLista<Categoria>(listaCategorias, qtdCategorias);
+
     // =========================================================================
     // 3. LAÇO PRINCIPAL DO SISTEMA
     // =========================================================================
@@ -402,6 +552,10 @@ int main() {
         cout << "1 - Inserir Cliente\n";
         cout << "2 - Inserir Vendedor\n";
         cout << "3 - Registrar Nova Venda (Inclui Itens)\n";
+        cout << "4 - Consultar Estoque Minimo\n";
+        cout << "5 - Consultar Dados De Produtos\n";
+        cout << "6 - Exibir Valor Arrecadado\n";
+        cout << "7 - Excluir Cliente\n";
         cout << "0 - Sair\n";
         cout << "===================================================\n";
         cout << "Escolha uma opcao: ";
@@ -410,10 +564,12 @@ int main() {
         switch(opcao) {
             case 1:
                 cout << "\n[Funcao de Inserir Cliente]\n";
+                inserirCliente(listaClientes, qtdClientes, MAX_CLIENTES);
                 break;
             case 2:
                 // Sua funcao de inserir vendedor aqui
                 cout << "\n[Funcao de Inserir Vendedor]\n";
+                inserirVendedor(listaVendedores, qtdVendedores, MAX_VENDEDORES);
                 break;
             case 3:
                 // Chamada principal que conecta tudo (Passo 4, que chama o 5)
@@ -423,6 +579,22 @@ int main() {
                                listaItens, qtdItens, MAX_ITENS,
                                listaProdutos, qtdProdutos);
                 break;
+            case 4:
+                cout << "\n[Funcao de Consultar Estoque Minimo]\n";
+                consultarEstoqueMin(listaProdutos, qtdProdutos);
+                break;
+            case 5:
+                cout << "\n[Funcao de Consultar Dados De Produtos]\n";
+                consultarProduto(listaProdutos, qtdProdutos);
+                break;
+            case 6:
+                cout << "\n[Funcao de Exibir Valor Arrecadado]\n";
+                exibirValorArrecadado(listaVendas, qtdVendas, listaItens, qtdItens, listaProdutos, qtdProdutos);
+                break;
+            case 7:
+                cout << "\n[Funcao de Excluir Cliente]\n";
+                excluirCliente(listaClientes, qtdClientes);
+                break;
             case 0:
                 cout << "\nEncerrando o sistema. Ate mais!\n";
                 break;
@@ -430,6 +602,5 @@ int main() {
                 cout << "\nOpcao invalida. Tente novamente!\n";
         }
     } while (opcao != 0);
-
     return 0;
 }
