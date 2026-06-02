@@ -483,6 +483,12 @@ void excluirCliente(Cliente c[], int &qntVendas){
   }
 }
 
+void pause(){
+  cout << "Aperte ENTER para continuar...\n";
+  cin >> ws;
+  cin.get();
+}
+
 
 int main() {
     // =========================================================================
@@ -549,7 +555,7 @@ int main() {
     int opcao = 0;
     do {
         cout << "\n\n===================================================\n";
-        cout << "   SISTEMA DE GERENCIAMENTO - LOJA MULTIVERSO\n";
+        cout << "   SISTEMA DE GERENCIAMENTO\n";
         cout << "===================================================\n";
         cout << "1 - Ler Categoria\n";
         cout << "2 - Ler Produto\n";
@@ -594,14 +600,17 @@ int main() {
             case 6:
                 cout << "\n[Funcao de Consultar Estoque Minimo]\n";
                 consultarEstoqueMin(listaProdutos, qtdProdutos);
+                pause();
                 break;
             case 7:
                 cout << "\n[Funcao de Consultar Dados De Produtos]\n";
                 consultarProduto(listaProdutos, qtdProdutos);
+                pause();
                 break;
             case 8:
                 cout << "\n[Funcao de Exibir Valor Arrecadado]\n";
                 exibirValorArrecadado(listaVendas, qtdVendas, listaItens, qtdItens, listaProdutos, qtdProdutos);
+                pause();
                 break;
             case 9:
                 cout << "\n[Funcao de Excluir Cliente]\n";
