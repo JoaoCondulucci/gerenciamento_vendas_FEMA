@@ -92,58 +92,113 @@ void incluirItens(unsigned int codigoVenda, ItemVenda itens[], int &qtdItens, in
 /* Início das Funções para o Exercício 1 */
 int lerCategoria(Categoria c[], int qtdAtual, const int n) {
   cout << "\n\n=-=-=- Iniciando leitura da Categoria -=-=-=\n\n";
-  for (int i = qtdAtual; i < n; i++) {
-    cout << "\n" << i+1 <<  "˚ Categoria";
-    cout << "\nInsira o Código (0 para sair da leitura): ";
-    cin >> c[i].codigo;
+  int cont = qtdAtual;
 
-    if (c[i].codigo == 0) {
+  while (cont < n) {
+    unsigned int novoCodigo;
+    cout << "\n" << cont + 1 << "˚ Categoria";
+    cout << "\nInsira o Codigo (0 para sair da leitura): ";
+    cin >> novoCodigo;
+
+    if (novoCodigo == 0) {
       cout << "\nEncerrando a leitura!\n\n";
-      ordenarLista<Categoria>(c, i);
-      return i;
+      break;
     }
-    cout << "\nInsira a Descrição: ";
-    getline(cin >> ws, c[i].descricao);
+
+    if (buscaBinaria<Categoria>(c, cont, novoCodigo) != -1) {
+      cout << "[ERRO]: Ja existe uma categoria com o codigo " << novoCodigo << "!\n";
+      continue;
+    }
+
+    c[cont].codigo = novoCodigo;
+
+    cout << "Insira a Descricao: ";
+    getline(cin >> ws, c[cont].descricao);
+
+    cont++;
+
+    ordenarLista<Categoria>(c, cont);
   }
-  cout << "\nLimite máximo de categorias atingido!\n\n";
-  ordenarLista<Categoria>(c, n);
-  return n;
+
+  if (cont >= n) {
+    cout << "\nLimite maximo de categorias atingido!\n\n";
+  }
+  return cont;
 }
 
-int lerProduto(Produto p[], int qtdAtual, const int n) {
-  cout << "\n\n=-=-=- Iniciando leitura dos Produtos -=-=-=\n\n";
-  for (int i= qtdAtual; i < n; i++) {
-    cout << "\n" << i+1 << "˚ Produto";
-    cout << "\nInsira o Código (0 para sair da leitura): ";
-    cin>> p[i].codigo;
+int lerProduto(Produto p[], int qtdAtual, const int n, Categoria cat[], int qtdCat) {
+    cout << "\n\n=-=-=- Iniciando leitura dos Produtos -=-=-=\n\n";
+    int cont = qtdAtual;
 
-    if (p[i].codigo == 0) {
-      cout << "Encerrando a leitura!\n\n";
-      ordenarLista<Produto>(p, i);
-      return i;
+    while (cont < n) {
+        unsigned int novoCodigo;
+        cout << "\n" << cont + 1 << "˚ Produto";
+        cout << "\nInsira o Codigo (0 para sair da leitura): ";
+        cin >> novoCodigo;
+
+        if (novoCodigo == 0) {
+            cout << "\nEncerrando a leitura!\n\n";
+            break;
+        }
+
+        if (buscaBinaria<Produto>(p, cont, novoCodigo) != -1) {
+            cout << "[ERRO]: Ja existe um produto com o codigo " << novoCodigo << "!\n";
+            continue;
+        }
+
+        p[cont].codigo = novoCodigo;
+
+        cout << "Insira a Descricao: ";
+        getline(cin >> ws, p[cont].descricao);
+
+        unsigned int codCat;
+        int indiceCat;
+        do {
+            cout << "Informe o Codigo da Categoria: ";
+            cin >> codCat;
+            indiceCat = buscaBinaria<Categoria>(cat, qtdCat, codCat);
+
+            if (indiceCat == -1) {
+                cout << "[ERRO]: Categoria nao encontrada! Tente novamente.\n";
+            }
+        } while (indiceCat == -1);
+        p[cont].codigoCategoria = codCat;
+        cout << "-> Categoria vinculada: " << cat[indiceCat].descricao << "\n";
+
+        do {
+            cout << "Informe a quantidade Mínima do Estoque: ";
+            cin >> p[cont].estoqueMin;
+            if (p[cont].estoqueMin < 0) cout << "[ERRO]: Estoque minimo nao pode ser negativo!\n";
+        } while (p[cont].estoqueMin < 0);
+
+        do {
+            cout << "Informe a quantidade Máxima do Estoque: ";
+            cin >> p[cont].estoqueMax;
+            if (p[cont].estoqueMax <= p[cont].estoqueMin) {
+                cout << "[ERRO]: O estoque maximo deve ser MAIOR que o estoque minimo!\n";
+            }
+        } while (p[cont].estoqueMax <= p[cont].estoqueMin);
+
+        do {
+            cout << "Informe a Quantidade do Estoque Atual: ";
+            cin >> p[cont].quantEstoque;
+            if (p[cont].quantEstoque < 0) cout << "[ERRO]: Estoque atual nao pode ser negativo!\n";
+        } while (p[cont].quantEstoque < 0);
+
+        do {
+            cout << "Informe o Preço Unitário: ";
+            cin >> p[cont].precoUnit;
+            if (p[cont].precoUnit <= 0) cout << "[ERRO]: O preco deve ser maior que zero!\n";
+        } while (p[cont].precoUnit <= 0);
+
+        cont++;
+        ordenarLista<Produto>(p, cont);
     }
 
-    cout << "\nInsira a Descrição: ";
-    getline(cin >> ws, p[i].descricao);
-
-    cout << "\nInforme o Código da Categoria: ";
-    cin >> p[i].codigoCategoria;
-
-    cout << "\nInforme a Quantidade do Estoque: ";
-    cin >> p[i].quantEstoque;
-
-    cout << "\nInforme a quantidade Mínima do Estoque: ";
-    cin >> p[i].estoqueMin;
-
-    cout << "\nInforme a quantidade Máxima do Estoque: ";
-    cin >> p[i].estoqueMax;
-
-    cout << "\nInforme o Preço Unitário: ";
-    cin >> p[i].precoUnit;
-  }
-  cout << "\nLimite de Produtos atingido!\n";
-  ordenarLista<Produto>(p, n);
-  return n;
+    if (cont >= n) {
+        cout << "\nLimite maximo de produtos atingido!\n\n";
+    }
+    return cont;
 }
 /* Fim das Funções do Exercício 1 */
 
@@ -578,7 +633,7 @@ int main() {
                 break;
             case 2:
                 cout << "\n[Funcao de Ler Produtos]\n";
-                qtdProdutos = lerProduto(listaProdutos, qtdProdutos, MAX_PRODUTOS);
+                qtdProdutos = lerProduto(listaProdutos, qtdProdutos, MAX_PRODUTOS, listaCategorias, qtdCategorias);
                 break;
             case 3:
                 cout << "\n[Funcao de Inserir Cliente]\n";
