@@ -90,9 +90,9 @@ int buscaBinaria(T lista[], const int contador, unsigned int codigoBusca) {
 void incluirItens(unsigned int codigoVenda, ItemVenda itens[], int &qtdItens, int maxItens, Produto produtos[], int qtdProdutos);
 
 /* Início das Funções para o Exercício 1 */
-int lerCategoria(Categoria c[], const int n) {
+int lerCategoria(Categoria c[], int qtdAtual, const int n) {
   cout << "\n\n=-=-=- Iniciando leitura da Categoria -=-=-=\n\n";
-  for (int i = 0; i < n; i++) {
+  for (int i = qtdAtual; i < n; i++) {
     cout << "\n" << i+1 <<  "˚ Categoria";
     cout << "\nInsira o Código (0 para sair da leitura): ";
     cin >> c[i].codigo;
@@ -110,9 +110,9 @@ int lerCategoria(Categoria c[], const int n) {
   return n;
 }
 
-int lerProduto(Produto p[], const int n) {
+int lerProduto(Produto p[], int qtdAtual, const int n) {
   cout << "\n\n=-=-=- Iniciando leitura dos Produtos -=-=-=\n\n";
-  for (int i=0; i < n; i++) {
+  for (int i= qtdAtual; i < n; i++) {
     cout << "\n" << i+1 << "˚ Produto";
     cout << "\nInsira o Código (0 para sair da leitura): ";
     cin>> p[i].codigo;
@@ -153,7 +153,7 @@ void inserirCliente(struct Cliente lista[], int &contador, int tamanho){
   int loop = 1;
   int cont = contador;
   while(cont < tamanho && loop != 0){
-    cout << "Insira do código do cliente"<< (cont + 1) <<": ";
+    cout << "Insira do código do cliente "<< (cont + 1) <<": ";
     cin >> codigo;
     if(validarCodigo(lista, cont, codigo)){
       cout << "Codigo ja cadastrado"<< endl;
@@ -164,7 +164,7 @@ void inserirCliente(struct Cliente lista[], int &contador, int tamanho){
       cout << "Insira o endereco do cliente: ";
       getline(cin >> ws, lista[cont].endereco);
       cout << "Insira o telefone do cliente: ";
-      cin >> lista[cont].telefone;
+      getline(cin >> ws, lista[cont].telefone);
       cont++;
     }
     if (cont >= tamanho) {
@@ -183,13 +183,13 @@ void inserirVendedor(struct Vendedor lista[], int &contador, int tamanho){
   int loop = 1;
   int cont = contador;
   while(cont < tamanho && loop != 0){
-    cout << "Insira do código do vendedor"<< (cont + 1) <<": ";
+    cout << "Insira do código do vendedor "<< (cont + 1) <<": ";
     cin >> codigo;
     if(validarCodigo(lista, cont, codigo)){
-      cout << "Codigo ja cadastrado"<< endl;
+      cout << "[ERRO]: Codigo ja cadastrado!"<< endl;
     }else{
       lista[cont].codigo = codigo;
-      cout << "Insira o nome do vendedr: ";
+      cout << "Insira o nome do vendedor: ";
       getline(cin >> ws, lista[cont].nome);
       cout << "Insira o telefone do vendedor: ";
       getline(cin >> ws, lista[cont].telefone);
@@ -199,7 +199,7 @@ void inserirVendedor(struct Vendedor lista[], int &contador, int tamanho){
       cout << "\nLimite de Vendedores atingido!\n";
       break;
     }
-    cout << "Deseja cadastrar um novo vendedor?(0 - Nao / 1 - Sim): ";
+    cout << "Deseja cadastrar um novo vendedor? (0 - Nao / 1 - Sim): ";
     cin >> loop;
   }
   contador = cont;
@@ -365,7 +365,7 @@ void consultarProduto(struct Produto lista[], int contador){
   int codigo = 0;
   int loop = 1;
   for(int i = 0; i < contador; i++){
-    cout << lista[i].codigo << " - " << lista[i].descricao << endl; // Aqui a ideia e printar tudo para a pessoa saber oque ela vai querer ver mais detalhes
+    cout << lista[i].codigo << " - " << lista[i].descricao << endl;
   }
   cout << "Insira o codigo do produto que deseja consultar: "; // Queria adicionar a opcao do usuario ja colocar varios produtos que ele quer ver de uma vez
   cin >> codigo;
@@ -389,6 +389,8 @@ void consultarProduto(struct Produto lista[], int contador){
   if(loop !=0 ){
     cout << "Insira o codigo do produto que deseja consultar: ";
     cin >> codigo;
+  } else {
+    cout << "\nEncerrando leitura...\n";
   }
   }
 }
@@ -401,7 +403,7 @@ void consultarEstoqueMin(struct Produto lista[], int contador){
     if(lista[i].quantEstoque < lista[i].estoqueMin){
       int quantComprada = lista[i].estoqueMax - lista[i].quantEstoque;
     //7.1.1 ->
-      float valorComprada = float(quantComprada) * lista[i].precoUnit;
+      float valorComprada = static_cast<float>(quantComprada) * lista[i].precoUnit;
       cout << "Codigo: " << lista[i].codigo << endl;
       cout << "Descricao: " << lista[i].descricao << endl;
       cout << "Quantidade em estoque: " << lista[i].quantEstoque << endl;
@@ -431,10 +433,10 @@ void exibirValorArrecadado(Venda v[], int qtdVendas, ItemVenda itens[], int qtdI
     }
     valorTotal += valorAtual;
   }
-  cout << "Valor total arrecadado: " << valorTotal;
+  cout << "Valor total arrecadado: R$" << valorTotal;
 }
 
-//9˚ Passo -> Exibir o valor arrecadado de todas as vendas
+//9˚ Passo -> Excluir registro na tabela de Clientes
 void excluirCliente(Cliente c[], int &qntVendas){
   unsigned int codigo;
   if(qntVendas <= 0){
@@ -549,13 +551,15 @@ int main() {
         cout << "\n\n===================================================\n";
         cout << "   SISTEMA DE GERENCIAMENTO - LOJA MULTIVERSO\n";
         cout << "===================================================\n";
-        cout << "1 - Inserir Cliente\n";
-        cout << "2 - Inserir Vendedor\n";
-        cout << "3 - Registrar Nova Venda (Inclui Itens)\n";
-        cout << "4 - Consultar Estoque Minimo\n";
-        cout << "5 - Consultar Dados De Produtos\n";
-        cout << "6 - Exibir Valor Arrecadado\n";
-        cout << "7 - Excluir Cliente\n";
+        cout << "1 - Ler Categoria\n";
+        cout << "2 - Ler Produto\n";
+        cout << "3 - Inserir Cliente\n";
+        cout << "4 - Inserir Vendedor\n";
+        cout << "5 - Registrar Nova Venda (Inclui Itens)\n";
+        cout << "6 - Consultar Estoque Minimo\n";
+        cout << "7 - Consultar Dados De Produtos\n";
+        cout << "8 - Exibir Valor Arrecadado\n";
+        cout << "9 - Excluir Cliente\n";
         cout << "0 - Sair\n";
         cout << "===================================================\n";
         cout << "Escolha uma opcao: ";
@@ -563,15 +567,23 @@ int main() {
 
         switch(opcao) {
             case 1:
+                cout << "\n[Funcao de Ler Categorias]\n";
+                qtdCategorias = lerCategoria(listaCategorias, qtdCategorias, MAX_CATEGORIAS);
+                break;
+            case 2:
+                cout << "\n[Funcao de Ler Produtos]\n";
+                qtdProdutos = lerProduto(listaProdutos, qtdProdutos, MAX_PRODUTOS);
+                break;
+            case 3:
                 cout << "\n[Funcao de Inserir Cliente]\n";
                 inserirCliente(listaClientes, qtdClientes, MAX_CLIENTES);
                 break;
-            case 2:
+            case 4:
                 // Sua funcao de inserir vendedor aqui
                 cout << "\n[Funcao de Inserir Vendedor]\n";
                 inserirVendedor(listaVendedores, qtdVendedores, MAX_VENDEDORES);
                 break;
-            case 3:
+            case 5:
                 // Chamada principal que conecta tudo (Passo 4, que chama o 5)
                 registrarVenda(listaVendas, qtdVendas, MAX_VENDAS,
                                listaClientes, qtdClientes,
@@ -579,19 +591,19 @@ int main() {
                                listaItens, qtdItens, MAX_ITENS,
                                listaProdutos, qtdProdutos);
                 break;
-            case 4:
+            case 6:
                 cout << "\n[Funcao de Consultar Estoque Minimo]\n";
                 consultarEstoqueMin(listaProdutos, qtdProdutos);
                 break;
-            case 5:
+            case 7:
                 cout << "\n[Funcao de Consultar Dados De Produtos]\n";
                 consultarProduto(listaProdutos, qtdProdutos);
                 break;
-            case 6:
+            case 8:
                 cout << "\n[Funcao de Exibir Valor Arrecadado]\n";
                 exibirValorArrecadado(listaVendas, qtdVendas, listaItens, qtdItens, listaProdutos, qtdProdutos);
                 break;
-            case 7:
+            case 9:
                 cout << "\n[Funcao de Excluir Cliente]\n";
                 excluirCliente(listaClientes, qtdClientes);
                 break;
