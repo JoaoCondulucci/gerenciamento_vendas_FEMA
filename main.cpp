@@ -49,7 +49,7 @@ struct ItemVenda{
 // ENTAO NAO É NECESSARIO CRIAR OUTRA FUNÇÃO IGUAL PARA VALIDAR OS CODIGOS
 template <typename T>
 bool validarCodigo(T lista[], const int contador, int codigo){
-  for(int l = 0; l < contador; l++){
+  for(unsigned int l = 0; l < contador; l++){
     if(lista[l].codigo == codigo){
       return true;
     }
@@ -333,7 +333,7 @@ void incluirItens(unsigned int codigoVenda,
   cout << "\n\t|-> Estoque disponível: " << produtos[indiceProduto].quantEstoque << "\n";
 
   //5.2 -> Validação de Quantidade e do Estoque
-  int qtdDesejada;
+  unsigned int qtdDesejada;
   bool qtdValida = false;
 
   do {
@@ -362,7 +362,7 @@ void incluirItens(unsigned int codigoVenda,
 
 //6˚ Passo -> Permitir a consulda de produtos
 void consultarProduto(struct Produto lista[], int contador){
-  int codigo = 0;
+  unsigned int codigo = 0;
   int loop = 1;
   for(int i = 0; i < contador; i++){
     cout << lista[i].codigo << " - " << lista[i].descricao << endl;
@@ -484,8 +484,8 @@ void excluirCliente(Cliente c[], int &qntVendas){
 }
 
 void pause(){
-  cout << "Aperte ENTER para continuar...\n";
-  cin >> ws;
+  cout << "Aperte ENTER para continuar...";
+  cin.ignore();
   cin.get();
 }
 
